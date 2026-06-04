@@ -329,12 +329,18 @@
       margin-bottom: 20px;
     }
 
+    .layout > * {
+      min-width: 0;
+    }
+
     .stack {
       display: grid;
       gap: 20px;
+      min-width: 0;
     }
 
     .panel {
+      min-width: 0;
       background: rgba(255, 255, 255, 0.74);
       border: 1px solid var(--line);
       border-radius: var(--radius);
@@ -364,6 +370,7 @@
 
     .panel-body {
       padding: 20px;
+      min-width: 0;
     }
 
     .form-grid {
@@ -612,15 +619,36 @@
     .trend-chart {
       display: grid;
       grid-auto-flow: column;
-      grid-auto-columns: minmax(34px, 1fr);
+      grid-auto-columns: 46px;
       align-items: end;
       gap: 8px;
-      min-height: 220px;
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      height: 236px;
       padding: 14px 12px 10px;
       overflow-x: auto;
+      overflow-y: hidden;
       background: rgba(255, 255, 255, 0.48);
       border: 1px solid var(--line);
       border-radius: var(--radius);
+      overscroll-behavior-x: contain;
+      scrollbar-width: thin;
+      scroll-snap-type: x proximity;
+    }
+
+    .trend-chart::-webkit-scrollbar {
+      height: 8px;
+    }
+
+    .trend-chart::-webkit-scrollbar-thumb {
+      background: color-mix(in srgb, var(--primary) 38%, white);
+      border-radius: 999px;
+    }
+
+    .trend-chart::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.35);
+      border-radius: 999px;
     }
 
     .trend-bar-item {
@@ -628,8 +656,9 @@
       grid-template-rows: 36px 150px 34px;
       gap: 8px;
       align-items: end;
-      min-width: 42px;
+      width: 46px;
       text-align: center;
+      scroll-snap-align: start;
     }
 
     .trend-value {
@@ -1225,13 +1254,16 @@
           <div class="heatmap-head">
             <div class="heatmap-title">学习热力图</div>
             <div class="heatmap-scale">
-              <span>少</span>
+              <span>0</span>
               <span class="heatmap-cell"></span>
+              <span>1h</span>
               <span class="heatmap-cell level-1"></span>
+              <span>2h</span>
               <span class="heatmap-cell level-2"></span>
+              <span>3h</span>
               <span class="heatmap-cell level-3"></span>
+              <span>4h+</span>
               <span class="heatmap-cell level-4"></span>
-              <span>多</span>
             </div>
           </div>
           <div class="heatmap-grid" id="reportHeatmap"></div>
@@ -1639,13 +1671,14 @@
       const days = Number(elements.trendRange.value) || 7;
       const dailyStats = buildDailyTrend(days);
       const totalSeconds = dailyStats.reduce((sum, day) => sum + day.seconds, 0);
-      const averageSeconds = Math.round(totalSeconds / days);
+      const activeDays = dailyStats.filter(day => day.seconds > 0).length;
+      const averageSeconds = activeDays ? Math.round(totalSeconds / activeDays) : 0;
       const bestDay = dailyStats.reduce((best, day) => day.seconds > best.seconds ? day : best, dailyStats[0]);
       const maxSeconds = Math.max(...dailyStats.map(day => day.seconds), 1);
 
       elements.trendSummary.innerHTML = "";
       elements.trendSummary.append(createStatCard(`${days} 天总时长`, formatDuration(totalSeconds), true));
-      elements.trendSummary.append(createStatCard("日均学习时长", formatDuration(averageSeconds)));
+      elements.trendSummary.append(createStatCard("学习日均", formatDuration(averageSeconds)));
       elements.trendSummary.append(createStatCard("最高单日", `${formatShortDate(bestDay.date)} · ${formatDurationCompact(bestDay.seconds)}`));
 
       elements.trendChart.innerHTML = "";
@@ -1688,6 +1721,10 @@
         item.querySelector(".legend-swatch").style.background = getProjectColor(project);
         item.querySelector("span:last-child").textContent = project;
         elements.trendLegend.append(item);
+      });
+
+      requestAnimationFrame(() => {
+        elements.trendChart.scrollLeft = elements.trendChart.scrollWidth;
       });
     }
 
@@ -1735,7 +1772,6 @@
 
     function renderReport() {
       const report = buildReport(reportMode);
-      const maxProjectSeconds = Math.max(...PROJECTS.map(project => report.projectTotals[project] || 0), 1);
 
       elements.reportTabs.forEach(button => {
         button.classList.toggle("active", button.dataset.report === reportMode);
@@ -1752,7 +1788,7 @@
       PROJECTS.forEach(project => {
         const seconds = report.projectTotals[project] || 0;
         const percent = report.totalSeconds ? Math.round(seconds / report.totalSeconds * 100) : 0;
-        const fillWidth = seconds ? Math.max(3, Math.round(seconds / maxProjectSeconds * 100)) : 0;
+        const fillWidth = percent;
         const card = document.createElement("div");
         card.className = "report-project";
         card.innerHTML = `
@@ -1778,25 +1814,23 @@
 
     function renderReportHeatmap(report) {
       const days = enumerateDateRange(report.start, report.end);
-      const maxSeconds = Math.max(...days.map(date => report.dailyTotals[getDateKey(date)] || 0), 1);
 
       elements.reportHeatmap.innerHTML = "";
       days.forEach(date => {
         const dateKey = getDateKey(date);
         const seconds = report.dailyTotals[dateKey] || 0;
         const cell = document.createElement("div");
-        cell.className = `heatmap-cell level-${getHeatLevel(seconds, maxSeconds)}`;
+        cell.className = `heatmap-cell level-${getHeatLevel(seconds)}`;
         cell.title = `${dateKey} ${formatWeekday(dateKey)} · ${formatDuration(seconds)}`;
         elements.reportHeatmap.append(cell);
       });
     }
 
-    function getHeatLevel(seconds, maxSeconds) {
+    function getHeatLevel(seconds) {
       if (seconds <= 0) return 0;
-      const ratio = seconds / maxSeconds;
-      if (ratio <= 0.25) return 1;
-      if (ratio <= 0.5) return 2;
-      if (ratio <= 0.75) return 3;
+      if (seconds < 7200) return 1;
+      if (seconds < 10800) return 2;
+      if (seconds < 14400) return 3;
       return 4;
     }
 
