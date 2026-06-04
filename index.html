@@ -273,6 +273,28 @@
       -webkit-backdrop-filter: blur(14px) saturate(1.12);
     }
 
+    .daily-quote {
+      display: grid;
+      gap: 6px;
+      margin: -8px 0 20px;
+      padding: 16px 20px;
+      background: rgba(255, 255, 255, 0.66);
+      border: 1px solid rgba(255, 255, 255, 0.54);
+      border-left: 5px solid var(--accent);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px) saturate(1.15);
+      -webkit-backdrop-filter: blur(16px) saturate(1.15);
+    }
+
+    .daily-quote-text {
+      margin: 0;
+      color: var(--text);
+      font-size: 18px;
+      font-weight: 850;
+      line-height: 1.65;
+    }
+
     .countdown-panel {
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
@@ -375,9 +397,32 @@
 
     .form-grid {
       display: grid;
-      grid-template-columns: 1.6fr 1fr 0.8fr auto;
+      grid-template-columns: 1.6fr 1fr 0.8fr auto auto;
       gap: 12px;
       align-items: end;
+    }
+
+    .daily-task-option {
+      min-height: 40px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 8px 10px;
+      color: var(--primary-dark);
+      background: rgba(255, 255, 255, 0.56);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .daily-task-option input {
+      width: 16px;
+      min-height: 16px;
+      height: 16px;
+      accent-color: var(--primary);
     }
 
     .timer-form {
@@ -477,13 +522,43 @@
 
     .task-item {
       display: grid;
-      grid-template-columns: auto minmax(0, 1fr) auto auto;
+      grid-template-columns: auto auto minmax(0, 1fr) auto;
       gap: 12px;
       align-items: center;
       padding: 12px;
       background: rgba(255, 255, 255, 0.58);
       border: 1px solid var(--line);
       border-radius: var(--radius);
+      transition: opacity 0.15s ease, transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+    }
+
+    .task-item.dragging {
+      opacity: 0.5;
+      transform: scale(0.995);
+      border-color: var(--primary);
+    }
+
+    .task-item.drag-over {
+      background: rgba(255, 255, 255, 0.78);
+      border-color: var(--primary);
+    }
+
+    .drag-handle {
+      width: 26px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      border-radius: var(--radius);
+      cursor: grab;
+      font-size: 18px;
+      font-weight: 900;
+      line-height: 1;
+      user-select: none;
+    }
+
+    .drag-handle:active {
+      cursor: grabbing;
     }
 
     .task-check {
@@ -514,6 +589,15 @@
       margin-top: 4px;
       color: var(--muted);
       font-size: 13px;
+    }
+
+    .daily-badge {
+      color: var(--primary-dark);
+      background: var(--panel-soft);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 1px 7px;
+      font-weight: 800;
     }
 
     .task-actions {
@@ -1064,7 +1148,7 @@
     }
 
     .day-projects {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: 1fr;
     }
 
     .day-row {
@@ -1077,6 +1161,15 @@
       border: 1px solid var(--line);
       border-radius: var(--radius);
       font-weight: 800;
+    }
+
+    .day-projects .day-row {
+      min-height: 42px;
+    }
+
+    .day-projects .day-row span,
+    .day-projects .day-row strong {
+      white-space: nowrap;
     }
 
     .day-task-name {
@@ -1348,6 +1441,10 @@
       <div class="date-chip" id="todayLabel"></div>
     </header>
 
+    <section class="daily-quote" aria-label="每日一句">
+      <p class="daily-quote-text" id="dailyQuote"></p>
+    </section>
+
     <section class="countdown-panel" aria-labelledby="countdownTitle">
       <div>
         <div class="countdown-main">
@@ -1390,6 +1487,10 @@
                 <input id="taskMinutes" type="number" min="1" step="1" placeholder="分钟" required />
               </label>
               <button class="btn" id="taskSubmitBtn" type="submit">添加任务</button>
+              <label class="daily-task-option" title="勾选后每天自动生成这项任务">
+                <input id="taskDailyToggle" type="checkbox" />
+                每日任务
+              </label>
             </form>
             <div class="task-list" id="taskList"></div>
           </div>
@@ -1580,9 +1681,42 @@
     const PROJECTS = ["数学", "英语", "专业课", "政治", "其他"];
     const DEFAULT_EXAM_DATE = "2026-12-26";
     const WEEKLY_THEMES = ["暖炉", "海盐", "青芽", "藤雾", "松泉", "晨麦", "莓茶"];
+    const DAILY_QUOTES = [
+      "真正拉开差距的，不是某一天的爆发，而是每天都往前多走一点。",
+      "今天做完一件小事，明天就少一点慌张。",
+      "慢一点没关系，重要的是别停在原地。",
+      "你背下的每个单词、算过的每道题，都会在未来某一刻替你说话。",
+      "别急着证明自己很厉害，先安静地把该做的事做完。",
+      "考研不是一天赢下来的，是很多个普通日子一起托起来的。",
+      "状态不好也可以学习，先开始五分钟，节奏会自己回来。",
+      "今天的自律，不是为了为难自己，是为了把选择权留给以后的自己。",
+      "把注意力放回题目上，焦虑就会少一点空间。",
+      "不和别人比进度，只和昨天的自己比清醒。",
+      "会有难题，会有反复，但这些都不是停止的理由。",
+      "每天稳定完成一点，最后会变成很可靠的底气。",
+      "不要等完美状态，坐下来就是今天最好的开始。",
+      "你现在吃下的苦，会变成考场上更稳的手。",
+      "把今天过扎实，比想象一个完美的明天更重要。",
+      "学累了就休息一下，但别怀疑自己正在变好。",
+      "清醒地坚持，温柔地复盘，踏实地向前。",
+      "那些看起来重复的日子，其实都在悄悄铺路。",
+      "先完成，再优化；先行动，再调整。",
+      "你不需要一下子看到终点，只需要把今天这一页翻过去。",
+      "真正的进步，常常发生在没人鼓掌的时刻。",
+      "把一小时学实，比空想一整天更有力量。",
+      "焦虑的时候，回到计划；疲惫的时候，回到当下。",
+      "你正在做一件需要耐心的事，耐心本身也是实力。",
+      "今天多坚持一会儿，未来就多一分从容。",
+      "别怕慢，怕的是一直在原地给自己找理由。",
+      "题会越做越熟，路会越走越清楚。",
+      "把普通的一天过好，就是最朴素也最有效的努力。",
+      "该来的结果，会从认真完成的每一天里长出来。",
+      "今天不是用来否定自己的，是用来继续建设自己的。"
+    ];
 
     const defaultState = {
       tasks: [],
+      dailyTasks: [],
       records: [],
       dateNotes: {},
       settings: {
@@ -1607,6 +1741,7 @@
 
     const elements = {
       todayLabel: document.querySelector("#todayLabel"),
+      dailyQuote: document.querySelector("#dailyQuote"),
       countdownForm: document.querySelector("#countdownForm"),
       examDateInput: document.querySelector("#examDateInput"),
       countdownDays: document.querySelector("#countdownDays"),
@@ -1616,6 +1751,7 @@
       taskName: document.querySelector("#taskName"),
       taskProject: document.querySelector("#taskProject"),
       taskMinutes: document.querySelector("#taskMinutes"),
+      taskDailyToggle: document.querySelector("#taskDailyToggle"),
       taskSubmitBtn: document.querySelector("#taskSubmitBtn"),
       taskList: document.querySelector("#taskList"),
       clearTodayTasksBtn: document.querySelector("#clearTodayTasksBtn"),
@@ -1665,10 +1801,12 @@
     function init() {
       applyDailyTheme();
       elements.todayLabel.textContent = formatTodayLabel();
+      elements.dailyQuote.textContent = getDailyQuote();
       elements.examDateInput.value = state.settings.examDate;
       fillProjectSelect(elements.taskProject);
       fillProjectSelect(elements.timerProject);
       fillProjectSelect(elements.historyProjectFilter, true);
+      ensureDailyTasksForToday();
       bindEvents();
       render();
     }
@@ -1754,6 +1892,7 @@
       const name = elements.taskName.value.trim();
       const project = elements.taskProject.value;
       const estimatedMinutes = Number(elements.taskMinutes.value);
+      const isDailyTask = elements.taskDailyToggle.checked;
 
       if (!name || !project || estimatedMinutes <= 0) {
         showToast("请完整填写任务名称、项目和预计时长。");
@@ -1766,11 +1905,13 @@
           task.name = name;
           task.project = project;
           task.estimatedMinutes = estimatedMinutes;
+          syncDailyTemplateFromTask(task, isDailyTask);
         }
         editingTaskId = null;
         elements.taskSubmitBtn.textContent = "添加任务";
         showToast("任务已更新。");
       } else {
+        const dailyTaskId = isDailyTask ? createDailyTaskTemplate(name, project, estimatedMinutes) : "";
         state.tasks.push({
           id: createId(),
           date: getDateKey(),
@@ -1778,15 +1919,72 @@
           project,
           estimatedMinutes,
           completed: false,
+          dailyTaskId,
           createdAt: new Date().toISOString()
         });
-        showToast("任务已添加。");
+        showToast(isDailyTask ? "每日任务已添加，之后每天会自动出现。" : "任务已添加。");
       }
 
       elements.taskForm.reset();
       elements.taskProject.value = PROJECTS[0];
+      elements.taskDailyToggle.checked = false;
       saveState();
       render();
+    }
+
+    function createDailyTaskTemplate(name, project, estimatedMinutes) {
+      const dailyTask = {
+        id: createId(),
+        name,
+        project,
+        estimatedMinutes,
+        createdAt: new Date().toISOString()
+      };
+      state.dailyTasks.push(dailyTask);
+      return dailyTask.id;
+    }
+
+    function syncDailyTemplateFromTask(task, shouldBeDaily) {
+      if (task.dailyTaskId && !shouldBeDaily) {
+        state.dailyTasks = state.dailyTasks.filter(item => item.id !== task.dailyTaskId);
+        delete task.dailyTaskId;
+        return;
+      }
+
+      if (!task.dailyTaskId && shouldBeDaily) {
+        task.dailyTaskId = createDailyTaskTemplate(task.name, task.project, task.estimatedMinutes);
+        return;
+      }
+
+      if (task.dailyTaskId && shouldBeDaily) {
+        const dailyTask = state.dailyTasks.find(item => item.id === task.dailyTaskId);
+        if (dailyTask) {
+          dailyTask.name = task.name;
+          dailyTask.project = task.project;
+          dailyTask.estimatedMinutes = task.estimatedMinutes;
+        }
+      }
+    }
+
+    function ensureDailyTasksForToday() {
+      const today = getDateKey();
+      let changed = false;
+      state.dailyTasks.forEach(dailyTask => {
+        const existsToday = state.tasks.some(task => task.date === today && task.dailyTaskId === dailyTask.id);
+        if (existsToday) return;
+        state.tasks.push({
+          id: createId(),
+          date: today,
+          name: dailyTask.name,
+          project: dailyTask.project,
+          estimatedMinutes: dailyTask.estimatedMinutes,
+          completed: false,
+          dailyTaskId: dailyTask.id,
+          createdAt: new Date().toISOString()
+        });
+        changed = true;
+      });
+      if (changed) saveState();
     }
 
     function renderTasks() {
@@ -1804,7 +2002,9 @@
       todayTasks.forEach(task => {
         const item = document.createElement("article");
         item.className = `task-item${task.completed ? " done" : ""}`;
+        item.dataset.taskId = task.id;
         item.innerHTML = `
+          <span class="drag-handle" draggable="true" title="拖动调整顺序" aria-label="拖动调整顺序">≡</span>
           <input class="task-check" type="checkbox" ${task.completed ? "checked" : ""} aria-label="切换完成状态" />
           <div class="task-main">
             <p class="task-title"></p>
@@ -1812,11 +2012,12 @@
               <span></span>
               <span></span>
               <span></span>
+              <span class="daily-badge">每日任务</span>
             </div>
           </div>
           <div class="task-actions">
             <button class="icon-btn" type="button" title="编辑任务">改</button>
-            <button class="icon-btn" type="button" title="删除任务">删</button>
+            <button class="icon-btn delete-task-btn" type="button" title="删除任务">删</button>
           </div>
         `;
 
@@ -1825,12 +2026,66 @@
         meta[0].textContent = task.project;
         meta[1].textContent = `预计 ${formatMinutes(task.estimatedMinutes)}`;
         meta[2].textContent = task.completed ? "已完成" : "未完成";
+        meta[3].hidden = !task.dailyTaskId;
 
+        bindTaskDragEvents(item);
         item.querySelector(".task-check").addEventListener("change", () => toggleTask(task.id));
         item.querySelectorAll(".icon-btn")[0].addEventListener("click", () => editTask(task.id));
-        item.querySelectorAll(".icon-btn")[1].addEventListener("click", () => deleteTask(task.id));
+        const deleteBtn = item.querySelector(".delete-task-btn");
+        deleteBtn.title = task.dailyTaskId ? "取消每日任务" : "删除任务";
+        deleteBtn.addEventListener("click", () => deleteTask(task.id));
         elements.taskList.append(item);
       });
+    }
+
+    function bindTaskDragEvents(item) {
+      const handle = item.querySelector(".drag-handle");
+      handle.addEventListener("dragstart", event => {
+        item.classList.add("dragging");
+        event.dataTransfer.effectAllowed = "move";
+        event.dataTransfer.setData("text/plain", item.dataset.taskId);
+      });
+
+      handle.addEventListener("dragend", () => {
+        item.classList.remove("dragging");
+        elements.taskList.querySelectorAll(".drag-over").forEach(taskItem => taskItem.classList.remove("drag-over"));
+        saveTaskOrderFromDom();
+      });
+
+      item.addEventListener("dragover", event => {
+        event.preventDefault();
+        const draggingItem = elements.taskList.querySelector(".task-item.dragging");
+        if (!draggingItem || draggingItem === item) return;
+        item.classList.add("drag-over");
+        const shouldPlaceAfter = event.clientY > item.getBoundingClientRect().top + item.offsetHeight / 2;
+        elements.taskList.insertBefore(draggingItem, shouldPlaceAfter ? item.nextSibling : item);
+      });
+
+      item.addEventListener("dragleave", () => {
+        item.classList.remove("drag-over");
+      });
+
+      item.addEventListener("drop", event => {
+        event.preventDefault();
+        item.classList.remove("drag-over");
+      });
+    }
+
+    function saveTaskOrderFromDom() {
+      const today = getDateKey();
+      const orderedIds = [...elements.taskList.querySelectorAll(".task-item")]
+        .map(item => item.dataset.taskId)
+        .filter(Boolean);
+      if (orderedIds.length === 0) return;
+
+      const orderMap = new Map(orderedIds.map((id, index) => [id, index]));
+      const todayTasks = state.tasks
+        .filter(task => task.date === today)
+        .sort((a, b) => (orderMap.get(a.id) ?? 0) - (orderMap.get(b.id) ?? 0));
+      const otherTasks = state.tasks.filter(task => task.date !== today);
+      state.tasks = [...otherTasks, ...todayTasks];
+      saveState();
+      renderHistory();
     }
 
     function toggleTask(id) {
@@ -1848,21 +2103,31 @@
       elements.taskName.value = task.name;
       elements.taskProject.value = task.project;
       elements.taskMinutes.value = task.estimatedMinutes;
+      elements.taskDailyToggle.checked = Boolean(task.dailyTaskId);
       elements.taskSubmitBtn.textContent = "保存修改";
       elements.taskName.focus();
     }
 
     function deleteTask(id) {
-      if (!confirm("确定删除这个任务吗？")) return;
+      const task = state.tasks.find(item => item.id === id);
+      if (!task) return;
+      const message = task.dailyTaskId
+        ? "这是每日任务。删除后会取消以后每天自动出现，并删除今天这条任务。确定删除吗？"
+        : "确定删除这个任务吗？";
+      if (!confirm(message)) return;
+      if (task.dailyTaskId) {
+        state.dailyTasks = state.dailyTasks.filter(item => item.id !== task.dailyTaskId);
+      }
       state.tasks = state.tasks.filter(task => task.id !== id);
       if (editingTaskId === id) {
         editingTaskId = null;
         elements.taskForm.reset();
         elements.taskSubmitBtn.textContent = "添加任务";
+        elements.taskDailyToggle.checked = false;
       }
       saveState();
       render();
-      showToast("任务已删除。");
+      showToast(task.dailyTaskId ? "每日任务已取消。" : "任务已删除。");
     }
 
     function clearTodayTasks() {
@@ -1872,6 +2137,7 @@
       editingTaskId = null;
       elements.taskForm.reset();
       elements.taskSubmitBtn.textContent = "添加任务";
+      elements.taskDailyToggle.checked = false;
       saveState();
       render();
       showToast("今天的任务已清空。");
@@ -2637,6 +2903,7 @@
         const parsed = JSON.parse(saved);
         return {
           tasks: Array.isArray(parsed.tasks) ? parsed.tasks : [],
+          dailyTasks: Array.isArray(parsed.dailyTasks) ? parsed.dailyTasks : [],
           records: Array.isArray(parsed.records) ? parsed.records : [],
           dateNotes: parsed.dateNotes && typeof parsed.dateNotes === "object" ? parsed.dateNotes : {},
           settings: {
@@ -2656,6 +2923,11 @@
 
     function createId() {
       return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    }
+
+    function getDailyQuote(date = new Date()) {
+      const seed = Number(getDateKey(date).replaceAll("-", ""));
+      return DAILY_QUOTES[seed % DAILY_QUOTES.length];
     }
 
     function getDateKey(date = new Date()) {
