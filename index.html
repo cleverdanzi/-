@@ -221,26 +221,56 @@
       margin-bottom: 24px;
     }
 
+    .title-block {
+      position: relative;
+      padding: 16px 20px 16px 22px;
+      background: rgba(255, 255, 255, 0.68);
+      border: 1px solid rgba(255, 255, 255, 0.52);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px) saturate(1.15);
+      -webkit-backdrop-filter: blur(16px) saturate(1.15);
+    }
+
+    .title-block::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 14px;
+      bottom: 14px;
+      width: 5px;
+      background: var(--primary);
+      border-radius: 0 999px 999px 0;
+    }
+
     .title-block h1 {
       margin: 0;
-      font-size: 28px;
+      color: var(--text);
+      font-size: 34px;
+      line-height: 1.12;
+      font-weight: 950;
       letter-spacing: 0;
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.52);
     }
 
     .title-block p {
-      margin: 6px 0 0;
-      color: var(--muted);
-      font-size: 14px;
+      margin: 8px 0 0;
+      color: var(--primary-dark);
+      font-size: 15px;
+      font-weight: 800;
     }
 
     .date-chip {
       padding: 10px 14px;
       color: var(--primary-dark);
-      background: var(--panel-soft);
+      background: rgba(255, 255, 255, 0.72);
       border: 1px solid var(--line);
       border-radius: var(--radius);
       font-weight: 700;
       white-space: nowrap;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px) saturate(1.12);
+      -webkit-backdrop-filter: blur(14px) saturate(1.12);
     }
 
     .countdown-panel {
@@ -559,6 +589,7 @@
       font-size: 22px;
       font-weight: 900;
       font-variant-numeric: tabular-nums;
+      overflow-wrap: anywhere;
     }
 
     .trend-tools {
@@ -594,18 +625,20 @@
 
     .trend-bar-item {
       display: grid;
-      grid-template-rows: 24px 150px 34px;
+      grid-template-rows: 36px 150px 34px;
       gap: 8px;
       align-items: end;
-      min-width: 34px;
+      min-width: 42px;
       text-align: center;
     }
 
     .trend-value {
       color: var(--muted);
-      font-size: 12px;
+      font-size: 11px;
+      line-height: 1.15;
       font-weight: 800;
-      white-space: nowrap;
+      white-space: normal;
+      word-break: keep-all;
     }
 
     .trend-track {
@@ -830,7 +863,7 @@
 
     .history-day summary {
       display: grid;
-      grid-template-columns: 120px 72px minmax(0, 1fr) 126px;
+      grid-template-columns: 120px 48px minmax(170px, 1fr) minmax(146px, max-content) 42px;
       gap: 14px;
       align-items: center;
       padding: 14px 16px;
@@ -848,6 +881,7 @@
       color: var(--primary-dark);
       font-size: 13px;
       font-weight: 800;
+      white-space: nowrap;
     }
 
     .history-day[open] summary {
@@ -892,6 +926,7 @@
       font-weight: 900;
       text-align: right;
       font-variant-numeric: tabular-nums;
+      white-space: nowrap;
     }
 
     .history-detail {
@@ -911,10 +946,7 @@
     }
 
     .mini-item {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 12px;
-      align-items: center;
+      display: block;
       padding: 10px 12px;
       background: rgba(255, 255, 255, 0.58);
       border: 1px solid var(--line);
@@ -931,6 +963,20 @@
       margin-top: 3px;
       color: var(--muted);
       font-size: 13px;
+    }
+
+    .mini-status {
+      display: inline-block;
+      margin-left: 8px;
+      padding: 2px 7px;
+      color: var(--primary-dark);
+      background: var(--panel-soft);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+      vertical-align: baseline;
     }
 
     .table-wrap {
@@ -1600,7 +1646,7 @@
       elements.trendSummary.innerHTML = "";
       elements.trendSummary.append(createStatCard(`${days} 天总时长`, formatDuration(totalSeconds), true));
       elements.trendSummary.append(createStatCard("日均学习时长", formatDuration(averageSeconds)));
-      elements.trendSummary.append(createStatCard("最高单日", `${formatShortDate(bestDay.date)} · ${formatDuration(bestDay.seconds)}`));
+      elements.trendSummary.append(createStatCard("最高单日", `${formatShortDate(bestDay.date)} · ${formatDurationCompact(bestDay.seconds)}`));
 
       elements.trendChart.innerHTML = "";
       dailyStats.forEach(day => {
@@ -1614,7 +1660,7 @@
           </div>
           <div class="trend-label"></div>
         `;
-        item.querySelector(".trend-value").textContent = day.seconds ? formatDuration(day.seconds) : "0";
+        item.querySelector(".trend-value").textContent = day.seconds ? formatDurationCompact(day.seconds) : "0";
         const bar = item.querySelector(".trend-bar");
         bar.style.height = `${height}%`;
         PROJECTS.forEach(project => {
@@ -1722,7 +1768,7 @@
         `;
         card.querySelector(".report-project-name").textContent = project;
         card.querySelector(".report-project-dot").style.background = getProjectColor(project);
-        card.querySelector(".report-project-time").textContent = formatDuration(seconds);
+        card.querySelector(".report-project-time").textContent = formatDurationCompact(seconds);
         card.querySelector(".mini-meta").textContent = `${percent}%`;
         card.querySelector(".report-project-fill").style.width = `${fillWidth}%`;
         card.querySelector(".report-project-fill").style.background = getProjectColor(project);
@@ -1946,13 +1992,15 @@
         item.innerHTML = `
           <div>
             <p class="mini-title"></p>
-            <div class="mini-meta"></div>
+            <div class="mini-meta">
+              <span class="mini-meta-text"></span>
+              <span class="mini-status"></span>
+            </div>
           </div>
-          <strong></strong>
         `;
         item.querySelector(".mini-title").textContent = task.name;
-        item.querySelector(".mini-meta").textContent = `${task.project} · 预计 ${formatMinutes(task.estimatedMinutes)}`;
-        item.querySelector("strong").textContent = task.completed ? "已完成" : "未完成";
+        item.querySelector(".mini-meta-text").textContent = `${task.project} · 预计 ${formatMinutes(task.estimatedMinutes)}`;
+        item.querySelector(".mini-status").textContent = task.completed ? "已完成" : "未完成";
         container.append(item);
       });
     }
@@ -2126,6 +2174,18 @@
       if (hours && minutes) return `${hours}小时${minutes}分钟`;
       if (hours) return seconds ? `${hours}小时${seconds}秒` : `${hours}小时`;
       if (minutes) return `${minutes}分钟${seconds ? `${seconds}秒` : ""}`;
+      return `${seconds}秒`;
+    }
+
+    function formatDurationCompact(totalSeconds) {
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+
+      if (hours && minutes) return `${hours}时${minutes}分`;
+      if (hours) return `${hours}时`;
+      if (minutes && seconds) return `${minutes}分${seconds}秒`;
+      if (minutes) return `${minutes}分`;
       return `${seconds}秒`;
     }
 
