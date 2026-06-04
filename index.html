@@ -726,36 +726,66 @@
       line-height: 1.2;
     }
 
-    .report-tabs {
+    .report-layout {
       display: grid;
-      grid-template-columns: repeat(3, 88px);
-      gap: 8px;
+      grid-template-columns: minmax(280px, 0.85fr) minmax(420px, 1.15fr);
+      gap: 16px;
+      align-items: start;
     }
 
-    .report-tab {
-      min-height: 38px;
-      color: var(--primary-dark);
-      background: var(--panel-soft);
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      font-weight: 800;
-    }
-
-    .report-tab.active {
-      color: #fff;
-      background: var(--primary);
-      border-color: var(--primary);
+    .report-info {
+      min-width: 0;
     }
 
     .report-overview {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr;
       gap: 14px;
       margin-bottom: 16px;
     }
 
+    .report-subjects {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .report-subject {
+      min-width: 0;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.5);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .report-subject-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .report-subject-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex: 0 0 auto;
+    }
+
+    .report-subject-time {
+      color: var(--text);
+      font-size: 18px;
+      font-weight: 900;
+      line-height: 1.2;
+      overflow-wrap: anywhere;
+    }
+
     .heatmap-wrap {
-      margin-bottom: 16px;
+      min-width: 0;
       padding: 14px;
       background: rgba(255, 255, 255, 0.5);
       border: 1px solid var(--line);
@@ -774,6 +804,43 @@
       font-weight: 900;
     }
 
+    .heatmap-month-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.38);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .heatmap-month-label {
+      color: var(--text);
+      font-size: 16px;
+      font-weight: 900;
+      text-align: center;
+    }
+
+    .month-nav-btn {
+      width: 40px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      color: var(--primary-dark);
+      background: var(--panel-soft);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      font-size: 18px;
+      font-weight: 900;
+    }
+
+    .month-nav-btn:disabled {
+      opacity: 0.42;
+      cursor: not-allowed;
+    }
+
     .heatmap-scale {
       display: flex;
       align-items: center;
@@ -783,19 +850,63 @@
       font-weight: 800;
     }
 
+    .heatmap-scale .heatmap-cell {
+      width: 14px;
+      min-width: 14px;
+      font-size: 0;
+      pointer-events: none;
+    }
+
     .heatmap-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(18px, 1fr));
-      gap: 6px;
+      gap: 14px;
+      justify-content: center;
+    }
+
+    .heatmap-month {
+      width: min(100%, 520px);
+      min-width: 0;
+      margin: 0 auto;
+    }
+
+    .calendar-weekdays,
+    .calendar-days {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(46px, 1fr));
+      gap: 5px;
+    }
+
+    .calendar-weekdays {
+      margin-bottom: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+      text-align: center;
+    }
+
+    .calendar-weekday {
+      line-height: 1;
     }
 
     .heatmap-cell {
-      aspect-ratio: 1;
-      min-width: 18px;
+      min-height: 46px;
+      min-width: 0;
+      display: grid;
+      place-items: center;
       border: 1px solid rgba(255, 255, 255, 0.5);
-      border-radius: 4px;
+      border-radius: 8px;
       background: rgba(255, 255, 255, 0.48);
       box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.02);
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .heatmap-cell.blank {
+      background: transparent;
+      border-color: transparent;
+      box-shadow: none;
     }
 
     .heatmap-cell.level-1 {
@@ -812,59 +923,209 @@
 
     .heatmap-cell.level-4 {
       background: var(--primary);
+      color: #fff;
     }
 
-    .report-projects {
+    .heatmap-tooltip {
+      position: fixed;
+      z-index: 20;
+      min-width: 190px;
+      max-width: 260px;
+      padding: 12px;
+      color: #fff;
+      background: rgba(24, 49, 43, 0.96);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(6px);
+      transition: opacity 0.16s ease, transform 0.16s ease;
+    }
+
+    .heatmap-tooltip.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .tooltip-date {
+      margin-bottom: 6px;
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .tooltip-total {
+      margin-bottom: 8px;
+      font-size: 18px;
+      font-weight: 900;
+    }
+
+    .tooltip-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      padding-top: 5px;
+      color: rgba(255, 255, 255, 0.86);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .tooltip-note {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255, 255, 255, 0.18);
+      color: rgba(255, 255, 255, 0.82);
+      font-size: 13px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+
+    .day-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: rgba(8, 20, 18, 0.46);
+      backdrop-filter: blur(8px);
+    }
+
+    .day-modal.show {
+      display: flex;
+    }
+
+    .day-dialog {
+      width: min(820px, 100%);
+      max-height: min(720px, calc(100vh - 48px));
+      overflow: auto;
+      background: rgba(246, 250, 247, 0.94);
+      border: 1px solid rgba(255, 255, 255, 0.56);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .day-dialog-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .day-dialog-head h3 {
+      margin: 0 0 4px;
+      font-size: 22px;
+    }
+
+    .day-dialog-body {
       display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
+      grid-template-columns: minmax(240px, 0.85fr) minmax(0, 1.15fr);
+      gap: 16px;
+      padding: 18px;
+    }
+
+    .day-summary-grid {
+      display: grid;
+      grid-template-columns: 1fr;
       gap: 12px;
     }
 
-    .report-project {
+    .day-dialog-main {
+      display: grid;
+      gap: 16px;
+      align-content: start;
+    }
+
+    .day-dialog-side {
+      display: grid;
+      gap: 16px;
+      align-content: start;
+    }
+
+    .day-section {
       padding: 14px;
-      background: rgba(255, 255, 255, 0.58);
+      background: rgba(255, 255, 255, 0.56);
       border: 1px solid var(--line);
       border-radius: var(--radius);
     }
 
-    .report-project-head {
+    .day-section h4 {
+      margin: 0 0 10px;
+      font-size: 15px;
+    }
+
+    .day-projects,
+    .day-tasks {
+      display: grid;
+      gap: 8px;
+    }
+
+    .day-projects {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .day-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 8px;
-      margin-bottom: 10px;
-    }
-
-    .report-project-name {
-      font-weight: 900;
-    }
-
-    .report-project-dot {
-      width: 11px;
-      height: 11px;
-      border-radius: 50%;
-      flex: 0 0 auto;
-    }
-
-    .report-project-time {
-      font-size: 20px;
-      font-weight: 900;
-      font-variant-numeric: tabular-nums;
-    }
-
-    .report-project-bar {
-      height: 8px;
-      margin-top: 10px;
-      background: rgba(255, 255, 255, 0.5);
+      gap: 12px;
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.6);
       border: 1px solid var(--line);
-      border-radius: 999px;
-      overflow: hidden;
+      border-radius: var(--radius);
+      font-weight: 800;
     }
 
-    .report-project-fill {
-      height: 100%;
+    .day-task-name {
       min-width: 0;
-      border-radius: 999px;
+      overflow-wrap: anywhere;
+    }
+
+    .day-task-status {
+      flex: 0 0 auto;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .day-note-editor {
+      min-height: 132px;
+      resize: vertical;
+    }
+
+    .day-dialog-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    @media (max-width: 760px) {
+      .day-dialog-body {
+        grid-template-columns: 1fr;
+      }
+
+      .day-projects {
+        grid-template-columns: 1fr;
+      }
+
+      .calendar-weekdays,
+      .calendar-days {
+        grid-template-columns: repeat(7, minmax(32px, 1fr));
+      }
+
+      .heatmap-cell {
+        min-height: 38px;
+      }
+
+      .report-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .report-subjects {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
     }
 
     .history-tools {
@@ -1239,41 +1500,80 @@
     <section class="panel" aria-labelledby="reportTitle">
       <div class="panel-header">
         <div>
-          <h2 id="reportTitle">学习报告</h2>
-          <small id="reportPeriod">本周、本月与全部记录汇总</small>
-        </div>
-        <div class="report-tabs" role="group" aria-label="切换报告范围">
-          <button class="report-tab active" data-report="week" type="button">周报</button>
-          <button class="report-tab" data-report="month" type="button">月报</button>
-          <button class="report-tab" data-report="all" type="button">总报</button>
+          <h2 id="reportTitle">学习总报</h2>
+          <small id="reportPeriod">全部学习记录汇总</small>
         </div>
       </div>
       <div class="panel-body">
-        <div class="report-overview" id="reportOverview"></div>
-        <div class="heatmap-wrap">
-          <div class="heatmap-head">
-            <div class="heatmap-title">学习热力图</div>
-            <div class="heatmap-scale">
-              <span>0</span>
-              <span class="heatmap-cell"></span>
-              <span>1h</span>
-              <span class="heatmap-cell level-1"></span>
-              <span>2h</span>
-              <span class="heatmap-cell level-2"></span>
-              <span>3h</span>
-              <span class="heatmap-cell level-3"></span>
-              <span>4h+</span>
-              <span class="heatmap-cell level-4"></span>
-            </div>
+        <div class="report-layout">
+          <div class="report-info">
+            <div class="report-overview" id="reportOverview"></div>
+            <div class="report-subjects" id="reportSubjects" aria-label="各科累计学习时长"></div>
           </div>
-          <div class="heatmap-grid" id="reportHeatmap"></div>
+          <div class="heatmap-wrap">
+            <div class="heatmap-head">
+              <div class="heatmap-title">学习热力图</div>
+              <div class="heatmap-scale">
+                <span>0</span>
+                <span class="heatmap-cell"></span>
+                <span>&lt;1.5h</span>
+                <span class="heatmap-cell level-1"></span>
+                <span>1.5h</span>
+                <span class="heatmap-cell level-2"></span>
+                <span>3h</span>
+                <span class="heatmap-cell level-3"></span>
+                <span>4.5h+</span>
+                <span class="heatmap-cell level-4"></span>
+              </div>
+            </div>
+            <div class="heatmap-month-nav" aria-label="切换热力图月份">
+              <button class="month-nav-btn" id="heatmapPrevMonth" type="button" aria-label="上一个月">&lt;</button>
+              <div class="heatmap-month-label" id="heatmapMonthLabel"></div>
+              <button class="month-nav-btn" id="heatmapNextMonth" type="button" aria-label="下一个月">&gt;</button>
+            </div>
+            <div class="heatmap-grid" id="reportHeatmap"></div>
+          </div>
         </div>
-        <div class="report-projects" id="reportProjects"></div>
       </div>
     </section>
   </main>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="heatmap-tooltip" id="heatmapTooltip" role="tooltip" aria-hidden="true"></div>
+  <div class="day-modal" id="dayModal" aria-hidden="true">
+    <section class="day-dialog" role="dialog" aria-modal="true" aria-labelledby="dayModalTitle">
+      <div class="day-dialog-head">
+        <div>
+          <h3 id="dayModalTitle">日期总览</h3>
+          <div class="mini-meta" id="dayModalSubtitle"></div>
+        </div>
+        <button class="icon-btn" id="dayModalClose" type="button" aria-label="关闭日期总览">×</button>
+      </div>
+      <div class="day-dialog-body">
+        <div class="day-dialog-side">
+          <div class="day-summary-grid" id="dayModalSummary"></div>
+          <div class="day-section">
+            <h4>各科学习时间</h4>
+            <div class="day-projects" id="dayModalProjects"></div>
+          </div>
+        </div>
+        <div class="day-dialog-main">
+          <div class="day-section">
+            <h4>任务完成情况</h4>
+            <div class="day-tasks" id="dayModalTasks"></div>
+          </div>
+          <div class="day-section">
+            <h4>备注</h4>
+            <textarea class="day-note-editor" id="dayModalNote" placeholder="写下这一天的复盘、状态或明天要注意的事。"></textarea>
+          </div>
+          <div class="day-dialog-actions">
+            <button class="btn secondary" id="dayModalCancel" type="button">关闭</button>
+            <button class="btn primary" id="dayModalSave" type="button">保存备注</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
 
   <script>
     const STORAGE_KEY = "kaoyan-study-manager-v1";
@@ -1284,6 +1584,7 @@
     const defaultState = {
       tasks: [],
       records: [],
+      dateNotes: {},
       settings: {
         examDate: DEFAULT_EXAM_DATE
       }
@@ -1291,7 +1592,10 @@
 
     let state = loadState();
     let editingTaskId = null;
-    let reportMode = "week";
+    let heatmapMonthOffset = 0;
+    let heatmapTooltipTimer = null;
+    let heatmapTooltipEvent = null;
+    let activeDayModalDate = null;
     let timer = {
       status: "idle",
       project: PROJECTS[0],
@@ -1329,18 +1633,31 @@
       trendSummary: document.querySelector("#trendSummary"),
       trendChart: document.querySelector("#trendChart"),
       trendLegend: document.querySelector("#trendLegend"),
-      reportTabs: document.querySelectorAll(".report-tab"),
       reportPeriod: document.querySelector("#reportPeriod"),
       reportOverview: document.querySelector("#reportOverview"),
+      reportSubjects: document.querySelector("#reportSubjects"),
+      heatmapPrevMonth: document.querySelector("#heatmapPrevMonth"),
+      heatmapNextMonth: document.querySelector("#heatmapNextMonth"),
+      heatmapMonthLabel: document.querySelector("#heatmapMonthLabel"),
       reportHeatmap: document.querySelector("#reportHeatmap"),
-      reportProjects: document.querySelector("#reportProjects"),
       historyProjectFilter: document.querySelector("#historyProjectFilter"),
       historyBox: document.querySelector("#historyBox"),
       exportBtn: document.querySelector("#exportBtn"),
       clearRecordsTodayBtn: document.querySelector("#clearRecordsTodayBtn"),
       clearAllBtn: document.querySelector("#clearAllBtn"),
       importTipBtn: document.querySelector("#importTipBtn"),
-      toast: document.querySelector("#toast")
+      toast: document.querySelector("#toast"),
+      heatmapTooltip: document.querySelector("#heatmapTooltip"),
+      dayModal: document.querySelector("#dayModal"),
+      dayModalTitle: document.querySelector("#dayModalTitle"),
+      dayModalSubtitle: document.querySelector("#dayModalSubtitle"),
+      dayModalSummary: document.querySelector("#dayModalSummary"),
+      dayModalProjects: document.querySelector("#dayModalProjects"),
+      dayModalTasks: document.querySelector("#dayModalTasks"),
+      dayModalNote: document.querySelector("#dayModalNote"),
+      dayModalClose: document.querySelector("#dayModalClose"),
+      dayModalCancel: document.querySelector("#dayModalCancel"),
+      dayModalSave: document.querySelector("#dayModalSave")
     };
 
     init();
@@ -1365,15 +1682,25 @@
       elements.resumeBtn.addEventListener("click", resumeTimer);
       elements.finishBtn.addEventListener("click", finishTimer);
       elements.trendRange.addEventListener("change", renderTrend);
-      elements.reportTabs.forEach(button => {
-        button.addEventListener("click", () => switchReport(button.dataset.report));
-      });
+      elements.heatmapPrevMonth.addEventListener("click", () => shiftHeatmapMonth(-1));
+      elements.heatmapNextMonth.addEventListener("click", () => shiftHeatmapMonth(1));
       elements.historyProjectFilter.addEventListener("change", renderHistory);
       elements.exportBtn.addEventListener("click", exportData);
       elements.clearRecordsTodayBtn.addEventListener("click", clearTodayRecords);
       elements.clearAllBtn.addEventListener("click", clearAllData);
       elements.importTipBtn.addEventListener("click", () => {
         showToast("当前版本支持导出备份。以后如果要加入导入功能，可以读取 JSON 后写回 localStorage。");
+      });
+      elements.dayModalClose.addEventListener("click", closeDayModal);
+      elements.dayModalCancel.addEventListener("click", closeDayModal);
+      elements.dayModalSave.addEventListener("click", saveDayNote);
+      elements.dayModal.addEventListener("click", event => {
+        if (event.target === elements.dayModal) closeDayModal();
+      });
+      document.addEventListener("keydown", event => {
+        if (event.key === "Escape" && elements.dayModal.classList.contains("show")) {
+          closeDayModal();
+        }
       });
     }
 
@@ -1765,79 +2092,291 @@
       return colorMap[project] || "var(--other-color)";
     }
 
-    function switchReport(mode) {
-      reportMode = mode;
+    function shiftHeatmapMonth(direction) {
+      heatmapMonthOffset += direction;
       renderReport();
     }
 
     function renderReport() {
-      const report = buildReport(reportMode);
-
-      elements.reportTabs.forEach(button => {
-        button.classList.toggle("active", button.dataset.report === reportMode);
-      });
+      const report = buildReport();
       elements.reportPeriod.textContent = report.periodText;
 
       elements.reportOverview.innerHTML = "";
-      elements.reportOverview.append(createStatCard(`${report.title}总时长`, formatDuration(report.totalSeconds), true));
+      elements.reportOverview.append(createStatCard("总学习时长", formatDuration(report.totalSeconds), true));
       elements.reportOverview.append(createStatCard("记录天数", `${report.activeDays} 天`));
 
+      renderReportSubjects(report);
       renderReportHeatmap(report);
+    }
 
-      elements.reportProjects.innerHTML = "";
+    function renderReportSubjects(report) {
+      elements.reportSubjects.innerHTML = "";
       PROJECTS.forEach(project => {
-        const seconds = report.projectTotals[project] || 0;
-        const percent = report.totalSeconds ? Math.round(seconds / report.totalSeconds * 100) : 0;
-        const fillWidth = percent;
         const card = document.createElement("div");
-        card.className = "report-project";
+        card.className = "report-subject";
         card.innerHTML = `
-          <div class="report-project-head">
-            <span class="report-project-name"></span>
-            <span class="report-project-dot"></span>
+          <div class="report-subject-head">
+            <span class="report-subject-name"></span>
+            <span class="report-subject-dot"></span>
           </div>
-          <div class="report-project-time"></div>
-          <div class="mini-meta"></div>
-          <div class="report-project-bar">
-            <div class="report-project-fill"></div>
-          </div>
+          <div class="report-subject-time"></div>
         `;
-        card.querySelector(".report-project-name").textContent = project;
-        card.querySelector(".report-project-dot").style.background = getProjectColor(project);
-        card.querySelector(".report-project-time").textContent = formatDurationCompact(seconds);
-        card.querySelector(".mini-meta").textContent = `${percent}%`;
-        card.querySelector(".report-project-fill").style.width = `${fillWidth}%`;
-        card.querySelector(".report-project-fill").style.background = getProjectColor(project);
-        elements.reportProjects.append(card);
+        card.querySelector(".report-subject-name").textContent = project;
+        card.querySelector(".report-subject-dot").style.background = getProjectColor(project);
+        card.querySelector(".report-subject-time").textContent = formatDurationCompact(report.projectTotals[project] || 0);
+        elements.reportSubjects.append(card);
       });
     }
 
     function renderReportHeatmap(report) {
-      const days = enumerateDateRange(report.start, report.end);
+      const month = buildHeatmapMonth(heatmapMonthOffset);
 
       elements.reportHeatmap.innerHTML = "";
-      days.forEach(date => {
+      elements.heatmapMonthLabel.textContent = month.title;
+      elements.heatmapNextMonth.disabled = heatmapMonthOffset >= 0;
+
+      const monthEl = document.createElement("section");
+      monthEl.className = "heatmap-month";
+      monthEl.innerHTML = `
+        <div class="calendar-weekdays" aria-hidden="true">
+          <span class="calendar-weekday">一</span>
+          <span class="calendar-weekday">二</span>
+          <span class="calendar-weekday">三</span>
+          <span class="calendar-weekday">四</span>
+          <span class="calendar-weekday">五</span>
+          <span class="calendar-weekday">六</span>
+          <span class="calendar-weekday">日</span>
+        </div>
+        <div class="calendar-days"></div>
+      `;
+      const dayGrid = monthEl.querySelector(".calendar-days");
+
+      for (let index = 0; index < month.leadingBlanks; index += 1) {
+        const blank = document.createElement("div");
+        blank.className = "heatmap-cell blank";
+        dayGrid.append(blank);
+      }
+
+      month.days.forEach(date => {
         const dateKey = getDateKey(date);
         const seconds = report.dailyTotals[dateKey] || 0;
+        const projectTotals = report.dailyProjectTotals[dateKey] || {};
+        const note = getDateNote(dateKey);
         const cell = document.createElement("div");
         cell.className = `heatmap-cell level-${getHeatLevel(seconds)}`;
-        cell.title = `${dateKey} ${formatWeekday(dateKey)} · ${formatDuration(seconds)}`;
-        elements.reportHeatmap.append(cell);
+        cell.textContent = String(date.getDate());
+        cell.addEventListener("mouseenter", event => scheduleHeatmapTooltip(event, dateKey, seconds, projectTotals, note));
+        cell.addEventListener("mousemove", updateHeatmapTooltipEvent);
+        cell.addEventListener("mouseleave", hideHeatmapTooltip);
+        cell.addEventListener("click", () => {
+          hideHeatmapTooltip();
+          openDayModal(dateKey);
+        });
+        dayGrid.append(cell);
       });
+
+      elements.reportHeatmap.append(monthEl);
     }
 
     function getHeatLevel(seconds) {
       if (seconds <= 0) return 0;
-      if (seconds < 7200) return 1;
+      if (seconds < 5400) return 1;
       if (seconds < 10800) return 2;
-      if (seconds < 14400) return 3;
+      if (seconds < 16200) return 3;
       return 4;
     }
 
-    function buildReport(mode) {
-      const range = getReportRange(mode);
+    function buildHeatmapMonth(offset) {
+      const today = parseDateOnly(getDateKey());
+      const firstDate = new Date(today.getFullYear(), today.getMonth() + offset, 1);
+      const lastDate = new Date(firstDate.getFullYear(), firstDate.getMonth() + 1, 0);
+      const weekday = firstDate.getDay() || 7;
+      return {
+        title: `${firstDate.getFullYear()}年${firstDate.getMonth() + 1}月`,
+        leadingBlanks: weekday - 1,
+        days: enumerateDateRange(firstDate, lastDate)
+      };
+    }
+
+    function scheduleHeatmapTooltip(event, dateKey, totalSeconds, projectTotals, note) {
+      hideHeatmapTooltip();
+      heatmapTooltipEvent = event;
+      heatmapTooltipTimer = setTimeout(() => {
+        showHeatmapTooltip(dateKey, totalSeconds, projectTotals, note);
+      }, 500);
+    }
+
+    function updateHeatmapTooltipEvent(event) {
+      heatmapTooltipEvent = event;
+      if (elements.heatmapTooltip.classList.contains("show")) {
+        positionHeatmapTooltip(event);
+      }
+    }
+
+    function showHeatmapTooltip(dateKey, totalSeconds, projectTotals, note) {
+      const rows = PROJECTS
+        .map(project => ({ project, seconds: projectTotals[project] || 0 }))
+        .filter(item => item.seconds > 0);
+
+      elements.heatmapTooltip.innerHTML = `
+        <div class="tooltip-date"></div>
+        <div class="tooltip-total"></div>
+        <div class="tooltip-subjects"></div>
+        <div class="tooltip-note"></div>
+      `;
+      elements.heatmapTooltip.querySelector(".tooltip-date").textContent = `${dateKey} ${formatWeekday(dateKey)}`;
+      elements.heatmapTooltip.querySelector(".tooltip-total").textContent = `总计 ${formatDuration(totalSeconds)}`;
+      const subjects = elements.heatmapTooltip.querySelector(".tooltip-subjects");
+      const noteBox = elements.heatmapTooltip.querySelector(".tooltip-note");
+
+      rows.forEach(item => {
+        const row = document.createElement("div");
+        row.className = "tooltip-row";
+        row.innerHTML = `
+          <span></span>
+          <strong></strong>
+        `;
+        row.querySelector("span").textContent = item.project;
+        row.querySelector("strong").textContent = formatDuration(item.seconds);
+        subjects.append(row);
+      });
+      if (note) {
+        noteBox.textContent = note;
+      } else {
+        noteBox.remove();
+      }
+
+      elements.heatmapTooltip.setAttribute("aria-hidden", "false");
+      elements.heatmapTooltip.classList.add("show");
+      if (heatmapTooltipEvent) {
+        positionHeatmapTooltip(heatmapTooltipEvent);
+      }
+    }
+
+    function positionHeatmapTooltip(event) {
+      const offset = 14;
+      const rect = elements.heatmapTooltip.getBoundingClientRect();
+      let left = event.clientX + offset;
+      let top = event.clientY + offset;
+
+      if (left + rect.width > window.innerWidth - 12) {
+        left = event.clientX - rect.width - offset;
+      }
+      if (top + rect.height > window.innerHeight - 12) {
+        top = event.clientY - rect.height - offset;
+      }
+
+      elements.heatmapTooltip.style.left = `${Math.max(12, left)}px`;
+      elements.heatmapTooltip.style.top = `${Math.max(12, top)}px`;
+    }
+
+    function hideHeatmapTooltip() {
+      clearTimeout(heatmapTooltipTimer);
+      heatmapTooltipTimer = null;
+      heatmapTooltipEvent = null;
+      elements.heatmapTooltip.classList.remove("show");
+      elements.heatmapTooltip.setAttribute("aria-hidden", "true");
+    }
+
+    function openDayModal(dateKey) {
+      hideHeatmapTooltip();
+      activeDayModalDate = dateKey;
+      const overview = buildDayOverview(dateKey);
+
+      elements.dayModalTitle.textContent = `${dateKey} ${formatWeekday(dateKey)}`;
+      elements.dayModalSubtitle.textContent = "当天学习总览";
+
+      elements.dayModalSummary.innerHTML = "";
+      elements.dayModalSummary.append(createStatCard("总学习时长", formatDuration(overview.totalSeconds), true));
+      elements.dayModalSummary.append(createStatCard("任务完成", `${overview.finishedTasks}/${overview.tasks.length}`));
+
+      elements.dayModalProjects.innerHTML = "";
+      overview.projectRows.forEach(item => {
+        const row = document.createElement("div");
+        row.className = "day-row";
+        row.innerHTML = `
+          <span></span>
+          <strong></strong>
+        `;
+        row.querySelector("span").textContent = item.project;
+        row.querySelector("strong").textContent = formatDuration(item.seconds);
+        elements.dayModalProjects.append(row);
+      });
+      if (overview.projectRows.length === 0) {
+        elements.dayModalProjects.innerHTML = '<div class="empty">这一天还没有学习计时记录。</div>';
+      }
+
+      elements.dayModalTasks.innerHTML = "";
+      overview.tasks.forEach(task => {
+        const row = document.createElement("div");
+        row.className = "day-row";
+        row.innerHTML = `
+          <div class="day-task-name"></div>
+          <div class="day-task-status"></div>
+        `;
+        row.querySelector(".day-task-name").textContent = task.name;
+        row.querySelector(".day-task-status").textContent = `${task.project} · 预计 ${formatMinutes(task.estimatedMinutes)} · ${task.completed ? "已完成" : "未完成"}`;
+        elements.dayModalTasks.append(row);
+      });
+      if (overview.tasks.length === 0) {
+        elements.dayModalTasks.innerHTML = '<div class="empty">这一天没有添加任务。</div>';
+      }
+
+      elements.dayModalNote.value = getDateNote(dateKey);
+      elements.dayModal.classList.add("show");
+      elements.dayModal.setAttribute("aria-hidden", "false");
+      elements.dayModalNote.focus();
+    }
+
+    function closeDayModal() {
+      elements.dayModal.classList.remove("show");
+      elements.dayModal.setAttribute("aria-hidden", "true");
+      activeDayModalDate = null;
+    }
+
+    function saveDayNote() {
+      if (!activeDayModalDate) return;
+      const note = elements.dayModalNote.value.trim();
+      if (note) {
+        state.dateNotes[activeDayModalDate] = note;
+      } else {
+        delete state.dateNotes[activeDayModalDate];
+      }
+      saveState();
+      renderReport();
+      showToast("当天备注已保存。");
+    }
+
+    function buildDayOverview(dateKey) {
+      const tasks = getTasksByDate(dateKey);
+      const records = state.records.filter(record => record.date === dateKey);
+      const projectTotals = Object.fromEntries(PROJECTS.map(project => [project, 0]));
+      let totalSeconds = 0;
+
+      records.forEach(record => {
+        totalSeconds += record.durationSeconds;
+        projectTotals[record.project] = (projectTotals[record.project] || 0) + record.durationSeconds;
+      });
+
+      return {
+        tasks,
+        finishedTasks: tasks.filter(task => task.completed).length,
+        totalSeconds,
+        projectRows: PROJECTS
+          .map(project => ({ project, seconds: projectTotals[project] || 0 }))
+          .filter(item => item.seconds > 0)
+      };
+    }
+
+    function getDateNote(dateKey) {
+      return (state.dateNotes && state.dateNotes[dateKey]) ? state.dateNotes[dateKey] : "";
+    }
+
+    function buildReport() {
+      const range = getReportRange();
       const projectTotals = Object.fromEntries(PROJECTS.map(project => [project, 0]));
       const dailyTotals = {};
+      const dailyProjectTotals = {};
       const activeDates = new Set();
       let totalSeconds = 0;
 
@@ -1846,6 +2385,10 @@
         totalSeconds += record.durationSeconds;
         activeDates.add(record.date);
         dailyTotals[record.date] = (dailyTotals[record.date] || 0) + record.durationSeconds;
+        if (!dailyProjectTotals[record.date]) {
+          dailyProjectTotals[record.date] = Object.fromEntries(PROJECTS.map(project => [project, 0]));
+        }
+        dailyProjectTotals[record.date][record.project] = (dailyProjectTotals[record.date][record.project] || 0) + record.durationSeconds;
         projectTotals[record.project] = (projectTotals[record.project] || 0) + record.durationSeconds;
       });
 
@@ -1857,43 +2400,21 @@
         totalSeconds,
         activeDays: activeDates.size,
         dailyTotals,
+        dailyProjectTotals,
         projectTotals
       };
     }
 
-    function getReportRange(mode) {
+    function getReportRange() {
       const today = parseDateOnly(getDateKey());
-      if (mode === "month") {
-        const start = new Date(today.getFullYear(), today.getMonth(), 1);
-        const end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-        return {
-          title: "本月",
-          start,
-          end,
-          periodText: `本月：${getDateKey(start)} 至 ${getDateKey(end)}`
-        };
-      }
-
-      if (mode === "all") {
-        const recordDates = state.records.map(record => record.date).sort();
-        const startText = recordDates[0] || getDateKey(today);
-        const endText = recordDates[recordDates.length - 1] || getDateKey(today);
-        return {
-          title: "总计",
-          start: parseDateOnly(startText),
-          end: parseDateOnly(endText),
-          periodText: recordDates.length ? `全部记录：${startText} 至 ${endText}` : "全部记录：暂无学习记录"
-        };
-      }
-
-      const day = today.getDay() || 7;
-      const start = addDays(today, 1 - day);
-      const end = addDays(start, 6);
+      const recordDates = state.records.map(record => record.date).sort();
+      const startText = recordDates[0] || getDateKey(today);
+      const endText = recordDates[recordDates.length - 1] || getDateKey(today);
       return {
-        title: "本周",
-        start,
-        end,
-        periodText: `本周：${getDateKey(start)} 至 ${getDateKey(end)}`
+        title: "总计",
+        start: parseDateOnly(startText),
+        end: parseDateOnly(endText),
+        periodText: recordDates.length ? `全部记录：${startText} 至 ${endText}` : "全部记录：暂无学习记录"
       };
     }
 
@@ -2117,6 +2638,7 @@
         return {
           tasks: Array.isArray(parsed.tasks) ? parsed.tasks : [],
           records: Array.isArray(parsed.records) ? parsed.records : [],
+          dateNotes: parsed.dateNotes && typeof parsed.dateNotes === "object" ? parsed.dateNotes : {},
           settings: {
             ...defaultState.settings,
             ...(parsed.settings || {})
